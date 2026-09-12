@@ -7,6 +7,9 @@ description: Author and query engineering standards in Spool. Defines labels, at
 
 Use this skill when capturing, refining, or querying **engineering standards, coding conventions, and technical policies** in a Spool graph.
 
+> Use `spl_*` MCP tools as the default Spool interface when available. Use the documented `spl`
+> commands only as the CLI fallback.
+
 > [!IMPORTANT]
 > **Knowledge Graph, Not Task Tracking**
 > Engineering standards in Spool represent durable organizational invariants, rules, and best practices. They are **never** used for backlog tasks (e.g. "Add linter to CI", "Write unit tests", "Fix security scan"). Every node must be an atomic statement of policy or rule.

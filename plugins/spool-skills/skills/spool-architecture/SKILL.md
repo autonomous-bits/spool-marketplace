@@ -7,6 +7,9 @@ description: Author and query architecture knowledge in Spool. Defines labels, a
 
 Use this skill when capturing, refining, or querying **architecture decisions, topologies, technical invariants, and product-architecture mappings** in a Spool graph.
 
+> Use `spl_*` MCP tools as the default Spool interface when available. Use the documented `spl`
+> commands only as the CLI fallback.
+
 > [!IMPORTANT]
 > **Context Scope & Domain Invariants**
 > 1. **Scoped Context (Architecture & Product Only)**: Architecture work cares exclusively about **`Architecture`** and **`Product`** labels. When evaluating context, tracing dependencies, or running queries, ignore unrelated engineering standards, coding conventions, or lint rules.
