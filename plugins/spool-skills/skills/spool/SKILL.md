@@ -1,6 +1,6 @@
 ---
 name: spool
-description: Use Spool graph version control via native MCP tools (`spl_*`) by default, falling back to the local CLI (`spl`) if MCP is unavailable. Initialize repositories, stage and commit graph changes, manage branches and merges, query graph snapshots, validate schemas, and maintain repository integrity.
+description: Use native Spool MCP tools (`spl_*`) by default, falling back to the local CLI (`spl`) when MCP is unavailable. Initialize repositories, stage and commit graph changes, manage branches and merges, query graph snapshots, validate schemas, and maintain repository integrity.
 ---
 
 # Spool
@@ -13,18 +13,12 @@ Use Spool's native MCP tools (`spl_*`) as the primary interface whenever they ar
 provide typed input schemas, in-memory mutation staging through `spl_add`, serialized repository
 access, structured conflict handling, and warning preservation.
 
-Use the `spl` CLI only when MCP is unavailable, has a transport or protocol failure, or when
-running shell scripts and CI. CLI commands write successful JSON results to stdout and structured
-failures to stderr. Do not edit the resolved Spool state directory directly.
+Use the `spl` CLI when MCP is unavailable, has a transport or protocol failure, or when running
+shell scripts and CI. CLI commands write successful JSON results to stdout and structured failures
+to stderr. Do not edit the resolved Spool state directory directly.
 
-The bundled MCP server starts with:
-
-```sh
-spl mcp
-```
-
-It is configured in this plugin's root `mcp.json`. The `spl` executable must be available on the
-user's `PATH`.
+This plugin does not bundle an MCP server configuration. Configure the Spool MCP server separately
+to use the native tools. The `spl` executable must be available on the user's `PATH`.
 
 ## MCP Tool to CLI Mapping
 

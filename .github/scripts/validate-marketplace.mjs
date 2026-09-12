@@ -22,17 +22,6 @@ for (const entry of marketplace.plugins) {
     throw new Error(`Catalog entry and manifest must have matching name and version for ${entry.name}.`);
   }
 
-  const mcpPath = resolve(pluginRoot, "mcp.json");
-  const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
-  const spoolServer = mcp.mcpServers?.spool;
-  if (mcp.$schema !== "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
-    || spoolServer?.type !== "stdio"
-    || spoolServer.command !== "spl"
-    || spoolServer.args?.length !== 1
-    || spoolServer.args[0] !== "mcp") {
-    throw new Error(`${entry.name} must configure the Spool stdio MCP server in mcp.json.`);
-  }
-
   const skillsPath = resolve(pluginRoot, "skills");
   const skills = await readdir(skillsPath, { withFileTypes: true });
   const skillDirectories = skills.filter((skill) => skill.isDirectory());
