@@ -18,7 +18,6 @@ The `spool-skills` plugin includes:
 - `spool-architecture` — author and query architectural knowledge.
 - `spool-engineering-standards` — author and query engineering standards.
 - `spool-product` — author and query product knowledge.
-- `spool-release` — prepare and validate releases.
 - `spool-technical-implementation` — capture technical implementation knowledge.
 
 Start a new Copilot session after installation and use `/skills list` to confirm
