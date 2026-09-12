@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "spool-skills",
-      "description": "MCP-enabled skills for authoring, querying, and maintaining Spool knowledge graphs.",
+      "description": "Skills for authoring, querying, and maintaining Spool knowledge graphs.",
       "version": "1.1.0",
       "author": {
         "name": "Autonomous Bits"

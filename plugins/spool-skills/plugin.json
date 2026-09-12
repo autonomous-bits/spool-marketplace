@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "spool-skills",
   "version": "1.1.0",
-  "description": "MCP-enabled skills for authoring, querying, and maintaining Spool knowledge graphs.",
+  "description": "Skills for authoring, querying, and maintaining Spool knowledge graphs.",
   "author": {
     "name": "Autonomous Bits"
   },
