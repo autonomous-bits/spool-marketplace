@@ -1,44 +1,73 @@
 ---
 name: spool
-description: Use the local Spool graph version-control CLI (`spl`) to initialize repositories, stage and commit graph changes, manage branches and merges, query graph snapshots, validate schemas, and maintain repository integrity.
+description: Use Spool graph version control via native MCP tools (`spl_*`) by default, falling back to the local CLI (`spl`) if MCP is unavailable. Initialize repositories, stage and commit graph changes, manage branches and merges, query graph snapshots, validate schemas, and maintain repository integrity.
 ---
 
 # Spool
 
-Use `spl` from a Spool workspace. Successful commands emit JSON on stdout; errors are written to
-stderr. Do not edit the resolved Spool state directory directly. Use `spl <command> --help` before
-relying on flags or output fields not covered by these references.
+Spool is a local, content-addressed graph version-control system.
+
+## Interaction Protocol: MCP Default with CLI Fallback
+
+Use Spool's native MCP tools (`spl_*`) as the primary interface whenever they are available. They
+provide typed input schemas, in-memory mutation staging through `spl_add`, serialized repository
+access, structured conflict handling, and warning preservation.
+
+Use the `spl` CLI only when MCP is unavailable, has a transport or protocol failure, or when
+running shell scripts and CI. CLI commands write successful JSON results to stdout and structured
+failures to stderr. Do not edit the resolved Spool state directory directly.
+
+The bundled MCP server starts with:
+
+```sh
+spl mcp
+```
+
+It is configured in this plugin's root `mcp.json`. The `spl` executable must be available on the
+user's `PATH`.
+
+## MCP Tool to CLI Mapping
+
+| MCP tool | CLI fallback |
+| --- | --- |
+| `spl_add`, `spl_status`, `spl_commit` | `spl add`, `spl status`, `spl commit` |
+| `spl_branch_list`, `spl_branch_create`, `spl_switch` | `spl branch list`, `spl branch create`, `spl switch` |
+| `spl_resolve`, `spl_search`, `spl_filter`, `spl_context`, `spl_graph` | `spl resolve`, `spl search`, `spl filter`, `spl context`, `spl graph` |
+| `spl_diff`, `spl_history`, `spl_branches_containing` | `spl diff`, `spl history`, `spl branches-containing` |
+| `spl_merge_*` | `spl merge preview/apply/conflicts/resolve/finalize/abort` |
+| `spl_init`, `spl_validate`, `spl_fsck`, `spl_gc`, `spl_prune` | `spl init`, `spl validate`, `spl fsck`, `spl gc`, `spl prune` |
+| `spl_asset_*`, `spl_workspace_*`, `spl_remote_*`, `spl_push`, `spl_pull` | corresponding `spl` commands |
 
 ## Branch Strategy & User Elicitation
 
-Before staging or committing changes with `spl add`:
-1. **Check the active branch**: Run `spl branch list` to identify the current branch and available branches.
+Before staging or committing changes:
+1. **Check the active branch**: Call `spl_branch_list`, or run `spl branch list` when using the CLI.
 2. **Elicit user intent**: Unless the user has already specified a target branch, prompt the user to clarify whether changes should be:
    - Committed directly to the current branch (e.g. `main`), or
-   - Isolated on a new dedicated branch (e.g. `spl branch create <branch-name> --from-branch <current>`) to allow review, diffing (`spl diff`), and isolated merging (`spl merge`).
-3. **Execute branch setup**: If a new branch was requested or agreed upon, create and switch to it before staging batches:
+   - Isolated on a new dedicated branch to allow review, diffing, and isolated merging.
+3. **Execute branch setup**: If a new branch was requested or agreed upon, call `spl_branch_create`
+   followed by `spl_switch`, or use the CLI fallback:
    ```sh
    spl branch create <new-branch> --from-branch <current-branch>
    spl switch <new-branch>
    ```
 
-Before merging a feature branch containing transient planning data, preview its cleanup with
-`spl prune --branch <branch> --dry-run`. After reviewing the JSON result, run `spl prune` to
-commit removal of nodes labeled `Ephemeral` and their incident edges. `prune` refuses branches
-with staged changes and requires `--force` for the protected default branch.
+Before merging a feature branch containing transient planning data, call
+`spl_prune(branch: "<branch>", dry_run: true)`. After reviewing its output, call `spl_prune` to
+commit removal of nodes labeled `Ephemeral` and their incident edges. With the CLI fallback, use
+`spl prune --branch <branch> --dry-run`; `prune` refuses branches with staged changes and requires
+`--force` for the protected default branch.
 
-## Common CLI Invocation Rules & Pitfalls
+## Invocation Rules & Pitfalls
 
-1. **Native `spl` Queries Only**: Always use built-in `spl` commands (`filter`, `search`, `resolve`, `graph`, `context`, `diff`) directly. Do not pipe JSON outputs to Python, awk, or ad-hoc shell parsing scripts.
-2. **`spl resolve`**: Requires `--node <node-id>` (e.g. `spl resolve --branch main --node <id>`). Running without `--node` fails.
-3. **`spl diff`**: Uses `--base-branch <name>` and `--target-branch <name>` (do not use `--from` or `--to`).
-4. **`spl merge apply`**: Requires `--preview <preview-id>` (obtained from `spl merge preview`) and `--transaction <tx-id>` along with `--source`, `--target`, `--author`, and `--message`.
-5. **`spl context` & `spl search-expand`**:
-   - Do **NOT** use `--id` or `--depth`.
-   - Use `--query "<keywords>"` OR `--label <label>` (mutually exclusive with `--query`).
-   - Use `--direction out|in|both` (default is `out`).
-   - Use `--max-depth <int>` (not `--depth`), `--seed-limit <int>`, `--edge-type <type>`.
-   - To inspect a single specific node by ID, use `spl resolve --branch main --node <id>`.
+1. **Native queries only**: Use native Spool query tools or their direct CLI counterparts. Do not
+   pipe JSON output to Python, jq, awk, or ad-hoc shell parsing scripts.
+2. **Resolve**: `spl_resolve` requires `node`; its CLI equivalent requires `--node <node-id>`.
+3. **Diff**: Use `base_branch` and `target_branch`, or CLI `--base-branch` and `--target-branch`.
+4. **Merge**: `spl_merge_apply` requires `preview_id`, `transaction_id`, `source`, `target`,
+   `author`, and `message`.
+5. **Context and search-expand**: Use `query` or labels/predicates, never `id`; use `max_depth`,
+   not `depth`. The CLI equivalents are `--query` or `--label`, and `--max-depth`.
 
 ## Command index
 
@@ -46,13 +75,12 @@ with staged changes and requires `--force` for the protected default branch.
 | --- | --- |
 | `init`, `add`, `status`, `commit` | [Working changes](references/working-changes.md) |
 | Authoring `add` batches and atomic ideas | [Batch authoring](references/batch-authoring.md) |
-| `branch`, `branch create`, `branch list`, `branch delete`, `switch`, `history`, `branches-containing`, `diff`, `cherry-pick` | [Branches and history](references/branches-and-history.md) |
-| `schema`, `schema migrate`, `validate` | [Schemas](references/schemas.md) |
+| `branch`, `switch`, `history`, `branches-containing`, `diff`, `cherry-pick` | [Branches and history](references/branches-and-history.md) |
+| `schema migrate`, `validate` | [Schemas](references/schemas.md) |
 | `resolve`, `search`, `filter`, `search-expand`, `context` | [Reading graphs](references/reading-graphs.md) |
 | `merge`, `merge preview`, `merge apply`, `merge conflicts`, `merge resolve`, `merge finalize`, `merge abort` | [Merges](references/merges.md) |
 | `fsck`, `gc`, `prune` | [Maintenance](references/maintenance.md) |
 | `asset add`, `asset read` | [CLI help](references/cli-help.md) |
-| `workspace`, `workspace init`, `workspace attach`, `workspace migrate`, `migrate` | [Multi-repo workspaces](references/workspaces.md) |
-| `remote`, `remote set`, `remote show`, `remote remove`, `remote branch` | [CLI help](references/cli-help.md) |
-| `push`, `pull` | [CLI help](references/cli-help.md) |
+| `workspace init`, `workspace attach`, `migrate` | [Multi-repo workspaces](references/workspaces.md) |
+| `remote`, `push`, `pull`, `clone`, `mcp` | [CLI help](references/cli-help.md) |
 | `version`, `completion`, `help` | [CLI help](references/cli-help.md) |

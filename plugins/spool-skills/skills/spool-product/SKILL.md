@@ -7,6 +7,9 @@ description: Author and query product knowledge in Spool. Defines labels, atomic
 
 Use this skill when capturing, refining, or querying **product-related knowledge** in a Spool graph.
 
+> Use `spl_*` MCP tools as the default Spool interface when available. Use the documented `spl`
+> commands only as the CLI fallback.
+
 > [!IMPORTANT]
 > **Core Product Invariants**
 > 1. **Knowledge Graph, Not Task Tracking**: Spool captures atomic ideas, invariant business rules, and user needs. It is **never** used for transient tasks (e.g. "Implement feature X", "Write tests for Y", "Fix bug Z").

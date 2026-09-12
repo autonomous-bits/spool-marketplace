@@ -7,6 +7,9 @@ description: Author, synthesize, and query technical implementation knowledge in
 
 Use this skill when preparing, designing, authoring, or executing **technical implementation specifications, execution plans, and code-level technical tasks** in a Spool workspace.
 
+> Use `spl_*` MCP tools as the default Spool interface when available. Use the documented `spl`
+> commands only as the CLI fallback.
+
 > [!IMPORTANT]
 > **Core Implementation Invariants**
 > 1. **Code is the Living Source of Truth**: The codebase (source code, tests, types, configs) is the definitive source of truth for technical execution and behavior. Technical specifications exist to align and guide development, but they do not replace or outlive code as the long-term truth of *how* the system works.

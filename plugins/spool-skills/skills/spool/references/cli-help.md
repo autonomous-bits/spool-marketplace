@@ -47,6 +47,7 @@ repository discovery.
 | `workspace init/attach/migrate`, `migrate` | Provision central detached state, bind repository manifests, and upgrade format |
 | `remote set/show/remove/branch` | Configure a non-secret Rack remote, check version compatibility, and manage remote branches |
 | `push`, `pull` | Exchange commits with the configured Rack remote over the native push/pull protocol |
+| `mcp` | Run the native Model Context Protocol server over standard I/O |
 | `version` | Print Spool release version and build information as JSON |
 | `completion`, `help` | Generate shell completion and inspect command help |
 
