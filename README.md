@@ -14,7 +14,6 @@ copilot plugin install spool-skills@spool-marketplace
 The `spool-skills` plugin includes:
 
 - `spool` — work with Spool graphs using the `spl` CLI.
-- `select-new-goal` — select an atomic implementation goal from a Spool graph.
 - `spool-architecture` — author and query architectural knowledge.
 - `spool-engineering-standards` — author and query engineering standards.
 - `spool-product` — author and query product knowledge.
