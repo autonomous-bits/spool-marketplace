@@ -1,0 +1,32 @@
+{
+  "name": "spool-marketplace",
+  "owner": {
+    "name": "Autonomous Bits"
+  },
+  "metadata": {
+    "description": "GitHub Copilot plugins for working with Spool knowledge graphs.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "spool-skills",
+      "description": "Skills for authoring, querying, and maintaining Spool knowledge graphs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Autonomous Bits"
+      },
+      "homepage": "https://github.com/autonomous-bits/spool-marketplace",
+      "repository": "https://github.com/autonomous-bits/spool-marketplace",
+      "license": "Apache-2.0",
+      "keywords": [
+        "spool",
+        "knowledge-graph",
+        "graph",
+        "engineering",
+        "product",
+        "architecture"
+      ],
+      "source": "./plugins/spool-skills"
+    }
+  ]
+}

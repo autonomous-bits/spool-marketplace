@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "spool-skills",
+  "version": "1.0.0",
+  "description": "Skills for authoring, querying, and maintaining Spool knowledge graphs.",
+  "author": {
+    "name": "Autonomous Bits"
+  },
+  "homepage": "https://github.com/autonomous-bits/spool-marketplace",
+  "repository": "https://github.com/autonomous-bits/spool-marketplace",
+  "license": "Apache-2.0",
+  "keywords": [
+    "spool",
+    "knowledge-graph",
+    "graph",
+    "engineering",
+    "product",
+    "architecture"
+  ]
+}
