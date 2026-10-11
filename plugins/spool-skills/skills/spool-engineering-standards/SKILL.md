@@ -7,8 +7,7 @@ description: Author and query engineering standards in Spool. Defines labels, at
 
 Use this skill when capturing, refining, or querying **engineering standards, coding conventions, and technical policies** in a Spool graph.
 
-> Use `spl_*` MCP tools as the default Spool interface when available. Use the documented `spl`
-> commands only as the CLI fallback.
+> Prefer `spl_*` MCP tools. The CLI is the fallback. The checkout must be bound (`.spool/context.toml` from `spl context init --remote`). Graph writes go through `spl_mutate` and open a short-lived branch and a pull request. Query with `spl_search`, `spl_filter`, `spl_resolve`, and `spl_query_context`. Change `schema.toml` only with `spl_schema_migrate`.
 
 > [!IMPORTANT]
 > **Knowledge Graph, Not Task Tracking**
@@ -58,7 +57,7 @@ State the rule, policy, or convention clearly with its scope and invariant:
 - **Bad**: `Logging and tracing guidelines for Go microservices` *(Combines multiple domains)*
 
 ### Anti-Patterns to Avoid
-1. **Task Language**: Do not author "Run linter on commit" or "Format code with prettier". State the invariant: `Source code formatting in CI is enforced via golangci-lint with zero tolerated warnings`.
+1. **Task Language**: Do not author "Run the linter in CI" or "Format code with prettier". State the invariant: `Source code formatting in CI is enforced via golangci-lint with zero tolerated warnings`.
 2. **Abstract Platitudes**: Avoid vague rules like "Write clean code". State concrete standards like `Functions must not exceed 50 lines of code excluding test fixtures`.
 3. **Implicit Anti-Patterns**: When banning an unsafe technique, create an `AntiPattern` node and link it from the `Standard` via a `FORBIDS` edge so reasoning agents understand both the rule and what to avoid.
 
@@ -66,7 +65,7 @@ State the rule, policy, or convention clearly with its scope and invariant:
 
 ## 4. Batch Authoring Example
 
-Create an `spl add` batch JSON file:
+Create a mutation-batch JSON file. `action` is the graph operation (`add`, `update`, or `delete`), not a CLI command:
 
 ```json
 [
@@ -110,33 +109,30 @@ Create an `spl add` batch JSON file:
 ]
 ```
 
-Stage and commit the batch:
+Write the batch through `spl_mutate` (short-lived branch and pull request):
+
+- **MCP:** `spl_mutate` with the `operations` array, plus optional `author` and `message`.
+- **CLI:**
 
 ```sh
-spl add --branch main --batch standards-batch.json
-spl status --branch main
-spl commit --branch main --author "Staff Engineer <standards@example.com>" --message "Record RFC 7807 error standard and anti-pattern"
+spl mutate --operations standards-batch.json \
+  --author "Staff Engineer <standards@example.com>" \
+  --message "Record RFC 7807 error standard and anti-pattern"
 ```
 
 ---
 
 ## 5. Querying Engineering Standards
 
-Discover and traverse engineering standards using `spl`:
+Discover and traverse engineering standards on the bound checkout:
+
+- **MCP:** `spl_search` `{ "query": "error RFC 7807" }`, `spl_filter` `{ "labels": ["SecurityPolicy"] }`, `spl_filter` `{ "labels": ["AntiPattern"] }`, `spl_resolve` `{ "node": "comp-order-service" }`, `spl_query_context` `{ "query": "RFC 7807", "direction": "both" }`.
+- **CLI:**
 
 ```sh
-# Search for standards relating to security or error handling
-spl search --branch main --query "error RFC 7807"
-
-# Filter all active security policies
-spl filter --branch main --label SecurityPolicy
-
-# Find all forbidden anti-patterns in the organization
-spl filter --branch main --label AntiPattern
-
-# Resolve a specific engineering standard or component by its exact ID
-spl resolve --branch main --node comp-order-service
-
-# Inspect standards and components around a specific topic
-spl context --branch main --query "RFC 7807" --direction both --max-depth 2
+spl search --query "error RFC 7807"
+spl filter --label SecurityPolicy
+spl filter --label AntiPattern
+spl resolve --node comp-order-service
+spl query-context --query "RFC 7807" --direction both
 ```

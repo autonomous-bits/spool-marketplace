@@ -1,6 +1,9 @@
 # Merges
 
-Always preview before applying. Preserve and reuse the preview ID and a caller-owned transaction ID.
+File-graph merge compares two context-git branches as node and edge files. Preview first. Reuse the preview id and a caller-owned transaction id.
+
+- **MCP:** `spl_merge_preview` with required `source` and `target`.
+- **CLI:**
 
 ```sh
 spl merge preview --source feature --target main
@@ -8,23 +11,19 @@ spl merge apply --source feature --target main --transaction merge-42 \
   --preview <preview-id> --author alice --message "Merge feature"
 ```
 
-Applying a clean, exact preview returns the merge commit. If conflicts exist, the target branch is
-leased for the transaction; inspect and resolve it rather than retrying with a new preview:
+`spl_merge_apply` requires `source`, `target`, `transaction_id`, and `preview_id`. `author` and `message` are optional. A clean, exact preview opens a short-lived branch and a pull request.
+
+When the preview conflicts, inspect the cached merge and resolve it:
 
 ```sh
-spl merge conflicts --target main --transaction merge-42
-spl merge resolve --target main --transaction merge-42 --preview <preview-id> \
-  --selections selections.json [--overrides mutations.json]
-spl merge finalize --target main --transaction merge-42
+spl merge conflicts --transaction merge-42
+spl merge resolve --transaction merge-42 --preview <preview-id> \
+  --selections selections.json
+spl merge finalize --transaction merge-42
 ```
 
-`selections.json` is a JSON array of conflict choices such as
-`{"conflictId":"...","choice":"source"}` or `{"conflictId":"...","choice":"target"}`.
-`--overrides` is an optional graph-mutation array for schema-derived semantic conflicts. To discard
-a conflicted transaction without moving the target branch:
+MCP equivalents: `spl_merge_conflicts` (`transaction_id`), `spl_merge_resolve` (`transaction_id`, `preview_id`, `selections`, optional `overrides`), `spl_merge_finalize` (`transaction_id`, optional `author` and `message`).
 
-```sh
-spl merge abort --target main --transaction merge-42
-```
+`selections` is an array of `{ "conflictId": "...", "choice": "source" }` or `"target"`. `overrides` is an optional mutation-operation array for schema-derived semantic conflicts. CLI: `--selections <file>` and optional `--overrides <file>`.
 
-Do not alter the target branch outside this transaction while its merge lease exists.
+Abort with `spl_merge_abort` / `spl merge abort --transaction merge-42`.
