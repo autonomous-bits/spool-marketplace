@@ -7,8 +7,7 @@ description: Author and query architecture knowledge in Spool. Defines labels, a
 
 Use this skill when capturing, refining, or querying **architecture decisions, topologies, technical invariants, and product-architecture mappings** in a Spool graph.
 
-> Use `spl_*` MCP tools as the default Spool interface when available. Use the documented `spl`
-> commands only as the CLI fallback.
+> Prefer `spl_*` MCP tools. The CLI is the fallback. The checkout must be bound (`.spool/context.toml` from `spl context init --remote`). Graph writes go through `spl_mutate` and open a short-lived branch and a pull request. Query with `spl_search`, `spl_filter`, `spl_resolve`, and `spl_query_context`. Change `schema.toml` only with `spl_schema_migrate`.
 
 > [!IMPORTANT]
 > **Context Scope & Domain Invariants**
@@ -80,7 +79,7 @@ Titles must express concrete decisions or structural facts with sufficient conte
 
 ## 4. Batch Authoring Example
 
-Create an `spl add` batch JSON file:
+Create a mutation-batch JSON file. `action` is the graph operation (`add`, `update`, or `delete`), not a CLI command:
 
 ```json
 [
@@ -125,12 +124,15 @@ Create an `spl add` batch JSON file:
 ]
 ```
 
-Stage and commit the batch:
+Write the batch through `spl_mutate` (short-lived branch and pull request):
+
+- **MCP:** `spl_mutate` with the `operations` array, plus optional `author` and `message`.
+- **CLI:**
 
 ```sh
-spl add --branch main --batch arch-batch.json
-spl status --branch main
-spl commit --branch main --author "Architect <arch@example.com>" --message "Record transactional outbox architecture decision"
+spl mutate --operations arch-batch.json \
+  --author "Architect <arch@example.com>" \
+  --message "Record transactional outbox architecture decision"
 ```
 
 ---
@@ -139,22 +141,14 @@ spl commit --branch main --author "Architect <arch@example.com>" --message "Reco
 
 When querying architecture context, limit scope to **Architecture** and **Product** nodes:
 
+- **MCP:** `spl_search` `{ "query": "outbox Kafka" }`, `spl_filter` `{ "labels": ["Decision"] }`, `spl_resolve` `{ "node": "req-deferred-billing-address" }`, `spl_query_context` `{ "query": "deferred billing", "direction": "both" }`, `spl_filter` `{ "labels": ["Tradeoff"] }`, `spl_filter` `{ "labels": ["Component"] }`.
+- **CLI:**
+
 ```sh
-# Search architecture decisions regarding messaging or storage
-spl search --branch main --query "outbox Kafka"
-
-# List all architecture decisions
-spl filter --branch main --label Decision
-
-# Resolve a specific node by its exact ID
-spl resolve --branch main --node req-deferred-billing-address
-
-# Inspect bounded context around an architectural decision or requirement
-spl context --branch main --query "deferred billing" --direction both --max-depth 2
-
-# Inspect all tradeoffs incurred by system decisions
-spl filter --branch main --label Tradeoff
-
-# Filter for all components in the system architecture
-spl filter --branch main --label Component
+spl search --query "outbox Kafka"
+spl filter --label Decision
+spl resolve --node req-deferred-billing-address
+spl query-context --query "deferred billing" --direction both
+spl filter --label Tradeoff
+spl filter --label Component
 ```

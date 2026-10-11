@@ -1,42 +1,36 @@
 # Working changes
 
-Initialize the resolved Spool state directory once:
+## Bind
+
+Bind this code repository once:
 
 ```sh
-spl init
+spl context init --remote https://github.com/org/solution-context.git
 ```
 
-For a workspace-backed repository, first run `spl workspace init <name>`, then
-use `spl workspace attach --workspace <name> --repository-id <id> [path]` to
-write and commit its manifest. Without a workspace manifest, run `spl init` to
-create local `.spl` state at the nearest parent `.spl` or `go.work` directory,
-or the current directory.
+Optional flags: `--solution-id`, `--protected-branch` (default `main`), `--repository-id`, `--author`. The command writes `.spool/context.toml` and seeds `schema.toml`, `nodes/`, `edges/`, and `assets/` on an empty remote, plus a `CodeRepository` node for this bind. Repeat it in each code repository that shares the same context remote. Context-management commands refuse to run without the bind file.
 
-## Branch selection
+## Graph writes
 
-Before staging changes, check the active branch (`spl branch list`) and elicit from the user whether
-to work against the current branch or create a new branch:
+Routine node and edge writes are one JSON mutation-operation batch. Each write opens a short-lived branch and a pull request. An identical or empty diff does not open a PR.
+
+- **MCP:** `spl_mutate` with `operations` (required), plus optional `author` and `message`.
+- **CLI:**
 
 ```sh
-# If creating a new branch
-spl branch create feature-idea --from-branch main
-spl switch feature-idea
+spl mutate --operations mutations.json --message "Record requirement"
+cat mutations.json | spl mutate --operations - --message "Record requirement"
 ```
 
-## Staging and committing mutations
+`--operations` is a file path or `-` for stdin. Use `spl_schema_migrate` / `spl schema migrate` when changing `schema.toml`. Use `spl_asset_add` for reference files and `spl_prune` for `Ephemeral` nodes.
 
-Stage a JSON array of graph-mutation operations, inspect the staged delta, then create an immutable
-commit:
+## Escape hatch
+
+If you still have a leftover `.spl` store, run `context export` / `migrate-once` once into the bound context git remote, then stop using `.spl`. Export is lossy; re-run is overwrite-at-own-risk.
 
 ```sh
-spl add --branch feature-idea --batch mutations.json
-spl status --branch feature-idea
-spl commit --branch feature-idea --author alice --message "Describe the graph change"
+spl context export
+spl context migrate-once
 ```
 
-`add` validates and stages the entire batch for its branch; it does not commit. `commit` commits all
-staged mutations for the named branch. Use explicit `--branch` values rather than assuming the
-active branch, and inspect the JSON result before using returned IDs in later commands.
-
-For the accepted mutation-array shape, use the installed CLI's `spl add --help` and repository
-examples/tests. Do not invent or edit storage objects in the resolved Spool state directory.
+MCP: `spl_context_export` with optional `from`, `branch`, `author`, and `message`. CLI flags: `--from` (leftover store directory), `--branch` (which snapshot to export), `--author`, `--message`. Kept: nodes, edges, schema, assets.

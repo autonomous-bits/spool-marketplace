@@ -1,7 +1,6 @@
 # Batch authoring
 
-An `spl add` batch is a JSON array. Create the file, stage it, inspect the result, and commit only
-when the staged delta is correct:
+A mutation batch is a JSON array of graph operations. Pass it to `spl_mutate` (`operations`) or `spl mutate --operations` so the bound context graph is written through a short-lived branch and pull request. Change `schema.toml` only with `spl_schema_migrate`.
 
 ```json
 [
@@ -18,24 +17,32 @@ when the staged delta is correct:
 ]
 ```
 
+`action` is `add`, `update`, or `delete`. `entity` is `node` or `edge`. Those values are the batch contract.
+
 ```sh
-spl add --branch main --batch mutations.json
-spl status --branch main
-spl commit --branch main --author alice --message "Record rate limit"
+spl mutate --operations mutations.json --message "Record rate limit"
 ```
 
-Each node represents one atomic idea: one fact, decision, requirement, question, or task. Its title
-must make sense without relying on another node, conversation, or document. Put relationships
-between ideas in edges rather than combining ideas into one node.
+MCP:
 
-| Good atomic, self-contained title | Bad title | Why the bad title fails |
+```json
+{
+  "operations": [],
+  "author": "agent <agent@example.com>",
+  "message": "Record rate limit"
+}
+```
+
+Each node is one atomic idea: one fact, decision, requirement, question, or task. Its title must stand alone. Put relationships in edges.
+
+| Good atomic title | Bad title | Why the bad title fails |
 | --- | --- | --- |
 | `The API returns 429 after 100 requests per minute` | `Rate limits and retries` | Combines an observation and a proposed response. |
 | `Retry HTTP 429 responses with exponential backoff` | `Make the API reliable` | Too broad; it contains many possible changes. |
 | `Password reset links expire after 30 minutes` | `Fix password reset and email templates` | Combines independent work items. |
 | `Should audit logs retain IP addresses for 30 days?` | `Security questions` | Does not state a single answerable question. |
 
-Use stable, descriptive IDs. Add edges when a relationship matters:
+Use stable, descriptive ids. Add an edge when a relationship matters:
 
 ```json
 [
@@ -57,6 +64,4 @@ Use stable, descriptive IDs. Add edges when a relationship matters:
 ]
 ```
 
-Properties are typed values: `null`, `bool`, `integer`, `float`, `string`, `list`, or `map`.
-`list` and `map` values recursively contain typed values. Use `spl add --help` for the current
-operation contract before authoring unfamiliar fields.
+Properties are typed values: `null`, `bool`, `integer`, `float`, `string`, `list`, or `map`. `list` and `map` values recursively contain typed values. Node operations may carry `labels` and `properties`. Edge operations may carry `type`, `source`, `target`, and `properties`. Use `spl mutate --help` before authoring unfamiliar fields.
